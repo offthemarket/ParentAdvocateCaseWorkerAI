@@ -1,16 +1,9 @@
-"""
-ParentAdvocateAI - Complete Case Management System
-"""
 import streamlit as st
-import os
-from datetime import datetime
-import sys
 
 st.set_page_config(
     page_title="ParentAdvocateAI",
     page_icon="🛡️",
-    layout="wide",
-    initial_sidebar_state="expanded"
+    layout="wide"
 )
 
 # CSS
@@ -22,177 +15,119 @@ st.markdown("""
         border-radius: 10px;
         color: white;
         margin-bottom: 2rem;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-    .info-card {
-        background: white;
-        padding: 1.5rem;
-        border-radius: 10px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        margin: 1rem 0;
-        border-left: 4px solid #2E86DE;
-    }
-    .serious-card {
-        background: #FFEBEE;
-        padding: 1.5rem;
-        border-radius: 10px;
-        border-left: 4px solid #FF6B6B;
-        margin: 1rem 0;
-    }
-    .stButton>button {
-        border-radius: 8px;
-        font-weight: 600;
-        padding: 0.5rem 2rem;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# Initialize session state
+# Session state
 if 'authenticated' not in st.session_state:
     st.session_state.authenticated = False
-if 'user_id' not in st.session_state:
-    st.session_state.user_id = None
 if 'user_name' not in st.session_state:
-    st.session_state.user_name = None
-if 'case_id' not in st.session_state:
-    st.session_state.case_id = None
+    st.session_state.user_name = "Demo Parent"
 
-def main():
-    if not st.session_state.authenticated:
-        show_login_page()
-    else:
-        show_main_app()
-
-def show_login_page():
-    st.markdown("""
-    <div class="main-header">
-        <h1 style="margin:0;">🛡️ ParentAdvocateAI</h1>
-        <p style="margin:0.5rem 0 0 0; opacity:0.9;">
-            Your AI-powered case management system for family reunification
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
+# Main app
+if not st.session_state.authenticated:
+    # Login page
+    st.markdown('<div class="main-header"><h1>🛡️ ParentAdvocateAI</h1><p>AI-powered case management for family reunification</p></div>', unsafe_allow_html=True)
     
-    tab1, tab2 = st.tabs(["🔐 Login", "📝 Sign Up"])
+    col1, col2 = st.columns([1, 1])
     
-    with tab1:
-        st.markdown("### Welcome Back")
+    with col1:
+        st.markdown("### 🔐 Login")
+        email = st.text_input("Email")
+        password = st.text_input("Password", type="password")
         
-        with st.form("login_form"):
-            email = st.text_input("📧 Email")
-            password = st.text_input("🔒 Password", type="password")
-            
-            if st.form_submit_button("Login", use_container_width=True):
-                if email == "demo@parent.com" and password == "demo123":
-                    st.session_state.authenticated = True
-                    st.session_state.user_id = 1
-                    st.session_state.user_name = "Demo Parent"
-                    st.session_state.case_id = 1
-                    st.success("✅ Welcome back!")
-                    st.rerun()
-                else:
-                    st.error("❌ Try: demo@parent.com / demo123")
+        if st.button("Login", use_container_width=True):
+            if email == "demo@parent.com" and password == "demo123":
+                st.session_state.authenticated = True
+                st.rerun()
+            else:
+                st.error("Try: demo@parent.com / demo123")
     
-    with tab2:
-        st.markdown("### Create Your Account")
-        
-        with st.form("signup_form"):
-            st.markdown("#### Your Information")
-            col1, col2 = st.columns(2)
-            with col1:
-                full_name = st.text_input("👤 Full Name *")
-                email = st.text_input("📧 Email *")
-            with col2:
-                password = st.text_input("🔒 Password *", type="password")
-                phone = st.text_input("📱 Phone")
-            
-            st.markdown("---")
-            st.markdown("#### Child Information")
-            st.info("⚠️ Add your child's details now - this is required!")
-            
-            child_name = st.text_input("Child's Name *", placeholder="Emma Smith")
-            col3, col4 = st.columns(2)
-            with col3:
-                child_dob = st.date_input("Child's Date of Birth *")
-            with col4:
-                removal_date = st.date_input("Date of Removal *")
-            
-            agree = st.checkbox("I agree to Terms of Service")
-            
-            if st.form_submit_button("Create Account", use_container_width=True):
-                if not agree:
-                    st.error("❌ You must agree to Terms")
-                elif not child_name:
-                    st.error("❌ Child's name is required")
-                else:
-                    st.success("✅ Account created! Log in with: demo@parent.com / demo123")
+    with col2:
+        st.markdown("### 📝 Sign Up")
+        st.text_input("Full Name")
+        st.text_input("Your Email")
+        st.text_input("Your Password", type="password")
+        st.button("Create Account", use_container_width=True)
 
-def show_main_app():
+else:
+    # Logged in - show app
     with st.sidebar:
         st.markdown("### 🛡️ ParentAdvocateAI")
         st.markdown(f"**{st.session_state.user_name}**")
         st.markdown("---")
         
-        page = st.radio(
-            "Navigation",
-            [
-                "🏠 Dashboard",
-                "📄 Documents & Analysis",
-                "🚨 SERIOUS - What You MUST Do",
-                "📚 Training Courses",
-                "✅ Compliance Tracker",
-                "⚠️ DCP Violations",
-                "📅 Appointments",
-                "👶 Child Updates",
-                "💭 Court Reflections",
-                "📊 Court Reports",
-                "💬 Private AI Chat",
-                "👤 Profile"
-            ]
-        )
+        page = st.radio("Menu", [
+            "🏠 Dashboard",
+            "📄 Documents",
+            "⚠️ Violations",
+            "✅ Compliance",
+            "📅 Appointments",
+            "👶 Child Updates",
+            "💭 Reflections",
+            "📊 Reports",
+            "💬 AI Chat",
+            "👤 Profile"
+        ])
         
         st.markdown("---")
-        if st.button("🚪 Logout", use_container_width=True):
+        if st.button("🚪 Logout"):
             st.session_state.authenticated = False
             st.rerun()
     
-    # Route to pages
-    if page == "🏠 Dashboard":
-        from pages import dashboard
-        dashboard.show_dashboard()
-    elif page == "📄 Documents & Analysis":
-        from pages import documents
-        documents.show_documents()
-    elif page == "🚨 SERIOUS - What You MUST Do":
-        from pages import serious
-        serious.show_serious()
-    elif page == "📚 Training Courses":
-        from pages import courses
-        courses.show_courses()
-    elif page == "✅ Compliance Tracker":
-        from pages import compliance
-        compliance.show_compliance()
-    elif page == "⚠️ DCP Violations":
-        from pages import violations
-        violations.show_violations()
-    elif page == "📅 Appointments":
-        from pages import appointments
-        appointments.show_appointments()
-    elif page == "👶 Child Updates":
-        from pages import child_updates
-        child_updates.show_child_updates()
-    elif page == "💭 Court Reflections":
-        from pages import reflection
-        reflection.show_reflection()
-    elif page == "📊 Court Reports":
-        from pages import reports
-        reports.show_reports()
-    elif page == "💬 Private AI Chat":
-        from pages import chat
-        chat.show_chat()
-    elif page == "👤 Profile":
-        from pages import profile
-        profile.show_profile()
-
-if __name__ == "__main__":
-    main()
+    # Show selected page
+    if "Dashboard" in page:
+        st.markdown('<div class="main-header"><h1>🏠 Dashboard</h1><p>Welcome back!</p></div>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        col1.metric("Days Separated", "45")
+        col2.metric("Days to Court", "12")
+        col3.metric("Compliance", "82%")
+        col4.metric("Violations", "3")
+        
+        st.success("✅ Clean drug test received!")
+        st.info("📌 Next court date: Friday 9am")
+        
+    elif "Documents" in page:
+        st.markdown('<div class="main-header"><h1>�� Documents</h1></div>', unsafe_allow_html=True)
+        uploaded = st.file_uploader("Upload document")
+        if uploaded:
+            st.success("✅ Document uploaded!")
+            
+    elif "Violations" in page:
+        st.markdown('<div class="main-header"><h1>⚠️ Violations Tracker</h1></div>', unsafe_allow_html=True)
+        st.metric("Total Violations", "3")
+        st.button("Report New Violation")
+        
+    elif "Compliance" in page:
+        st.markdown('<div class="main-header"><h1>✅ Compliance</h1></div>', unsafe_allow_html=True)
+        st.progress(0.82)
+        st.metric("Completion", "82%")
+        
+    elif "Appointments" in page:
+        st.markdown('<div class="main-header"><h1>📅 Appointments</h1></div>', unsafe_allow_html=True)
+        st.info("📌 Drug test tomorrow at 9am")
+        
+    elif "Child Updates" in page:
+        st.markdown('<div class="main-header"><h1>👶 Child Updates</h1></div>', unsafe_allow_html=True)
+        st.success("Emma got 100% on her spelling test!")
+        
+    elif "Reflections" in page:
+        st.markdown('<div class="main-header"><h1>💭 Court Reflections</h1></div>', unsafe_allow_html=True)
+        st.text_area("Answer reflection questions")
+        
+    elif "Reports" in page:
+        st.markdown('<div class="main-header"><h1>📊 Reports</h1></div>', unsafe_allow_html=True)
+        st.button("📥 Download Compliance Report")
+        st.button("📥 Download Violations Report")
+        
+    elif "Chat" in page:
+        st.markdown('<div class="main-header"><h1>💬 AI Chat</h1></div>', unsafe_allow_html=True)
+        st.text_area("Message the AI")
+        st.button("Send")
+        
+    elif "Profile" in page:
+        st.markdown('<div class="main-header"><h1>👤 Profile</h1></div>', unsafe_allow_html=True)
+        st.text_input("Name", value=st.session_state.user_name)
+        st.button("Save")
