@@ -1,5 +1,5 @@
 """
-Profile Page - User information
+Profile Management
 """
 import streamlit as st
 
@@ -13,33 +13,28 @@ def show_profile():
     
     st.markdown("### 📋 Personal Information")
     
-    with st.form("profile_form"):
+    with st.form("profile"):
         col1, col2 = st.columns(2)
-        
         with col1:
-            name = st.text_input("Full Name", value=st.session_state.get('user_name', 'Demo Parent'))
+            name = st.text_input("Full Name", value=st.session_state.user_name)
             email = st.text_input("Email", value="demo@parent.com", disabled=True)
             phone = st.text_input("Phone")
-        
         with col2:
-            new_password = st.text_input("New Password (leave blank to keep current)", type="password")
-            confirm_password = st.text_input("Confirm New Password", type="password")
+            new_pw = st.text_input("New Password (optional)", type="password")
+            confirm_pw = st.text_input("Confirm Password", type="password")
         
-        submit = st.form_submit_button("💾 Save Changes", use_container_width=True)
-        
-        if submit:
-            if new_password and new_password != confirm_password:
+        if st.form_submit_button("💾 Save Changes", use_container_width=True):
+            if new_pw and new_pw != confirm_pw:
                 st.error("Passwords don't match")
             else:
                 st.success("✅ Profile updated!")
     
     st.markdown("---")
     
-    # Additional info for parents
     st.markdown("### 🏥 Additional Information")
-    st.info("Store your Medicare, Centrelink, and GP information for faster appointment booking")
+    st.info("Store Medicare, Centrelink info for faster appointment booking")
     
-    with st.form("additional_info"):
+    with st.form("additional"):
         medicare = st.text_input("Medicare Number")
         crn = st.text_input("Centrelink CRN")
         gp = st.text_input("Regular GP")

@@ -2,7 +2,9 @@
 ParentAdvocateAI - Complete Case Management System
 """
 import streamlit as st
+import os
 from datetime import datetime
+import sys
 
 st.set_page_config(
     page_title="ParentAdvocateAI",
@@ -11,7 +13,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# CSS Styling
+# CSS
 st.markdown("""
 <style>
     .main-header {
@@ -30,58 +32,44 @@ st.markdown("""
         margin: 1rem 0;
         border-left: 4px solid #2E86DE;
     }
-    .success-card {
-        background: #E8F8F5;
-        padding: 1.5rem;
-        border-radius: 10px;
-        border-left: 4px solid #26DE81;
-    }
-    .warning-card {
-        background: #FFF3E0;
+    .serious-card {
+        background: #FFEBEE;
         padding: 1.5rem;
         border-radius: 10px;
         border-left: 4px solid #FF6B6B;
+        margin: 1rem 0;
     }
     .stButton>button {
         border-radius: 8px;
         font-weight: 600;
         padding: 0.5rem 2rem;
-        transition: all 0.3s ease;
-    }
-    .stButton>button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    }
-    .stProgress > div > div > div {
-        background: linear-gradient(90deg, #26DE81 0%, #2E86DE 100%);
-    }
-    [data-testid="stMetricValue"] {
-        font-size: 2rem;
-        font-weight: 700;
-        color: #2E86DE;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# Session state
+# Initialize session state
 if 'authenticated' not in st.session_state:
     st.session_state.authenticated = False
+if 'user_id' not in st.session_state:
+    st.session_state.user_id = None
 if 'user_name' not in st.session_state:
     st.session_state.user_name = None
 if 'case_id' not in st.session_state:
-    st.session_state.case_id = 1
+    st.session_state.case_id = None
 
 def main():
     if not st.session_state.authenticated:
-        show_auth_page()
+        show_login_page()
     else:
-        show_app()
+        show_main_app()
 
-def show_auth_page():
+def show_login_page():
     st.markdown("""
     <div class="main-header">
-        <h1>🛡️ ParentAdvocateAI</h1>
-        <p>AI-powered case management for family reunification</p>
+        <h1 style="margin:0;">🛡️ ParentAdvocateAI</h1>
+        <p style="margin:0.5rem 0 0 0; opacity:0.9;">
+            Your AI-powered case management system for family reunification
+        </p>
     </div>
     """, unsafe_allow_html=True)
     
@@ -89,24 +77,30 @@ def show_auth_page():
     
     with tab1:
         st.markdown("### Welcome Back")
-        with st.form("login"):
+        
+        with st.form("login_form"):
             email = st.text_input("📧 Email")
             password = st.text_input("🔒 Password", type="password")
+            
             if st.form_submit_button("Login", use_container_width=True):
                 if email == "demo@parent.com" and password == "demo123":
                     st.session_state.authenticated = True
+                    st.session_state.user_id = 1
                     st.session_state.user_name = "Demo Parent"
-                    st.success("✅ Welcome!")
+                    st.session_state.case_id = 1
+                    st.success("✅ Welcome back!")
                     st.rerun()
                 else:
-                    st.error("Try: demo@parent.com / demo123")
+                    st.error("❌ Try: demo@parent.com / demo123")
     
     with tab2:
-        st.markdown("### Create Account")
-        with st.form("signup"):
+        st.markdown("### Create Your Account")
+        
+        with st.form("signup_form"):
+            st.markdown("#### Your Information")
             col1, col2 = st.columns(2)
             with col1:
-                name = st.text_input("👤 Full Name *")
+                full_name = st.text_input("👤 Full Name *")
                 email = st.text_input("📧 Email *")
             with col2:
                 password = st.text_input("🔒 Password *", type="password")
@@ -114,57 +108,73 @@ def show_auth_page():
             
             st.markdown("---")
             st.markdown("#### Child Information")
-            child_name = st.text_input("Child's Name *")
+            st.info("⚠️ Add your child's details now - this is required!")
+            
+            child_name = st.text_input("Child's Name *", placeholder="Emma Smith")
             col3, col4 = st.columns(2)
             with col3:
-                child_dob = st.date_input("Date of Birth *")
+                child_dob = st.date_input("Child's Date of Birth *")
             with col4:
-                removal_date = st.date_input("Removal Date *")
+                removal_date = st.date_input("Date of Removal *")
             
-            agree = st.checkbox("I agree to Terms")
+            agree = st.checkbox("I agree to Terms of Service")
             
             if st.form_submit_button("Create Account", use_container_width=True):
-                if agree and child_name:
-                    st.success("✅ Account created! Login with demo@parent.com / demo123")
+                if not agree:
+                    st.error("❌ You must agree to Terms")
+                elif not child_name:
+                    st.error("❌ Child's name is required")
                 else:
-                    st.error("Please complete all fields")
+                    st.success("✅ Account created! Log in with: demo@parent.com / demo123")
 
-def show_app():
+def show_main_app():
     with st.sidebar:
         st.markdown("### 🛡️ ParentAdvocateAI")
         st.markdown(f"**{st.session_state.user_name}**")
         st.markdown("---")
         
-        page = st.radio("Navigation", [
-            "🏠 Dashboard",
-            "📄 Documents & Analysis",
-            "⚠️ Violations Tracker",
-            "✅ Compliance Progress",
-            "📅 Appointments",
-            "👶 Child Updates",
-            "💭 Court Reflections",
-            "📊 Court Reports",
-            "💬 Private AI Chat",
-            "👤 Profile"
-        ])
+        page = st.radio(
+            "Navigation",
+            [
+                "🏠 Dashboard",
+                "📄 Documents & Analysis",
+                "🚨 SERIOUS - What You MUST Do",
+                "📚 Training Courses",
+                "✅ Compliance Tracker",
+                "⚠️ DCP Violations",
+                "📅 Appointments",
+                "👶 Child Updates",
+                "💭 Court Reflections",
+                "📊 Court Reports",
+                "💬 Private AI Chat",
+                "👤 Profile"
+            ]
+        )
         
         st.markdown("---")
         if st.button("🚪 Logout", use_container_width=True):
             st.session_state.authenticated = False
             st.rerun()
     
-    if page == "�� Dashboard":
+    # Route to pages
+    if page == "🏠 Dashboard":
         from pages import dashboard
         dashboard.show_dashboard()
     elif page == "📄 Documents & Analysis":
         from pages import documents
         documents.show_documents()
-    elif page == "⚠️ Violations Tracker":
-        from pages import violations
-        violations.show_violations()
-    elif page == "✅ Compliance Progress":
+    elif page == "🚨 SERIOUS - What You MUST Do":
+        from pages import serious
+        serious.show_serious()
+    elif page == "📚 Training Courses":
+        from pages import courses
+        courses.show_courses()
+    elif page == "✅ Compliance Tracker":
         from pages import compliance
         compliance.show_compliance()
+    elif page == "⚠️ DCP Violations":
+        from pages import violations
+        violations.show_violations()
     elif page == "📅 Appointments":
         from pages import appointments
         appointments.show_appointments()
